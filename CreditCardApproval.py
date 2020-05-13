@@ -1,10 +1,18 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans
+from sklearn import preprocessing
+from sklearn.model_selection import train_test_split
+from sklearn import linear_model
+from sklearn.preprocessing import StandardScaler
+
 
 def main():
     data = import_data()
     data = clean_data(data)
+    data = handle_non_numerical_data(data)
+    data = train_test(data)
     # model(data)
 
 
@@ -30,11 +38,31 @@ def clean_data(data):
     data['Approved'] = data['Approved'].astype('bool')
 
     # bardzo maly odsetek brakow danych, wiec mozemy je usunac
-    print(data.isnull().mean())
+    #print(data.isnull().mean())
     data.dropna(inplace=True)
-    print(data.isnull().sum())
+    #print(data.isnull().sum())
 
     return data
+
+def handle_non_numerical_data(df):
+    columns = df.columns.values
+    for column in columns:
+        text_digit_vals = {}
+        def convert_to_int(val):
+            return text_digit_vals[val]
+
+        if df[column].dtype != np.int64 and df[column].dtype != np.float64:
+            column_contents = df[column].values.tolist()
+            unique_elements = set(column_contents)
+            x = 0
+            for unique in unique_elements:
+                if unique not in text_digit_vals:
+                    text_digit_vals[unique] = x
+                    x+=1
+
+            df[column] = list(map(convert_to_int, df[column]))
+
+    return df
 
 
 def import_data():
@@ -43,6 +71,22 @@ def import_data():
                       'PriorDefault', 'Employed', 'CreditScore', 'DriverLicense', 'Citizen', 'ZipCode', 'Income', 'Approved']
     data.columns = variable_names
     data.drop(['ZipCode', 'Citizen'], 1, inplace=True)
+    return data
+
+def train_test(data):
+    y=data.Approved
+    x=data.drop('Approved',axis=1)
+
+    x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.2)
+    #20% danych do testowania, 80% do trenowania
+
+    #print(x_train.head())
+
+    #scaling
+    scaler = StandardScaler()
+    scaledx_train = scaler.fit_transform(x_train)
+    print(scaledx_train)
+
     return data
 
 
