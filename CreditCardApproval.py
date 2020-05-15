@@ -19,6 +19,15 @@ def model_data(data):
     y = data.Approved
     x = data.drop('Approved', axis=1)
 
+    def scale_data(df):
+        columns_to_scale = df.loc[:, (df.dtypes == np.float64) | (df.dtypes == np.int64)]
+        not_scaled_columns = df.loc[:, (df.dtypes != np.float64) & (df.dtypes != np.int64)]
+        scaler = MinMaxScaler(feature_range=(0, 1))
+        scaled_data = scaler.fit_transform(columns_to_scale)
+        df = np.concatenate([scaled_data, not_scaled_columns], axis=1)
+
+        return df
+
     X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=1)
     # 20% danych do testowania, 80% do trenowania
 
@@ -32,14 +41,6 @@ def model_data(data):
     print(confusion_matrix(y_test, y_pred))
     print(classification_report(y_test, y_pred))
     print("Accuracy of classifier: ", classifier.score(scaledX_test, y_test))
-
-
-def scale_data(data):
-    columns_to_scale = data.loc[:, (data.dtypes == np.float64) | (data.dtypes == np.int64)]
-    scaler = MinMaxScaler(feature_range=(0, 1))
-    scaled_data = scaler.fit_transform(columns_to_scale)
-
-    return scaled_data
 
 
 def handle_non_numerical_data(df):
