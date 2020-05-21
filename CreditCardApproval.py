@@ -20,20 +20,16 @@ def model_data(data):
     x = data.drop('Approved', axis=1)
 
     def scale_data(df):
-        columns_to_scale = df.loc[:, (df.dtypes == np.float64) | (df.dtypes == np.int64)]
-        not_scaled_columns = df.loc[:, (df.dtypes != np.float64) & (df.dtypes != np.int64)]
         scaler = MinMaxScaler(feature_range=(0, 1))
-        scaled_data = scaler.fit_transform(columns_to_scale)
-        df = np.concatenate([scaled_data, not_scaled_columns], axis=1)
-
-        return df
+        scaled_data = scaler.fit_transform(df)
+        return scaled_data
 
     X_train, X_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=1)
     # 20% danych do testowania, 80% do trenowania
 
     scaledX_train = scale_data(X_train)
     scaledX_test = scale_data(X_test)
-    classifier = MLPClassifier(hidden_layer_sizes=(100,), max_iter=100, activation='relu',
+    classifier = MLPClassifier(hidden_layer_sizes=(11,), max_iter=100, alpha=.1, activation='relu',
                                solver='adam', random_state=1)
     classifier.fit(scaledX_train, y_train)
     y_pred = classifier.predict(scaledX_test)
